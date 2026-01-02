@@ -25,13 +25,51 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+
+	//lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.projectlombok:lombok:1.18.28'
+
+	//test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//db
+	implementation 'org.postgresql:postgresql'
+
+	//swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.12'
+
+	//jwt
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// AWS S3
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.3.0'
+	implementation "io.awspring.cloud:spring-cloud-aws-starter-s3:3.3.0"
+
+	// MongoDB
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+	// MongoDB
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+	// Redis (알림 기능이 있으니..일단 추가해놓겠습니다 쓸 때 주석 해제해서 올려주세요)
+//	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// WebSocket (실시간 채팅용) <- 얘도 쓸 때 아래꺼 주석해제해서 쓰면 됩니두
+//	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	//queryDSL은 필요하면 이후에 추가 예정입니다..
 }
 
 tasks.named('test') {
