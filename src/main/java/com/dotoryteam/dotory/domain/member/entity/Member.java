@@ -3,6 +3,7 @@ package com.dotoryteam.dotory.domain.member.entity;
 import com.dotoryteam.dotory.domain.alarm.entity.FcmToken;
 import com.dotoryteam.dotory.domain.auth.entity.EmailVerification;
 import com.dotoryteam.dotory.domain.lifestyle.entity.MemberLifestyle;
+import com.dotoryteam.dotory.domain.member.enums.Gender;
 import com.dotoryteam.dotory.domain.member.enums.UserStatus;
 import com.dotoryteam.dotory.domain.term.entity.MemberTerms;
 import com.dotoryteam.dotory.global.common.BaseEntity;
@@ -19,16 +20,15 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "member") // indexes 필요 시 추가할 예정, 미리 정렬해 두는게 필요할까?
-@DynamicInsert  //  기본 값 넣기 위해
+@Table(name = "member")
 public class Member extends BaseEntity {
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     //선호 기숙사
 
     //이메일 인증
-    @OneToOne(fetch = FetchType.EAGER , cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval = true)
     private EmailVerification emailVerification;
 
     //약관 동의
@@ -40,8 +40,9 @@ public class Member extends BaseEntity {
     private MemberLifestyle memberLifestyle;
 
     //토큰
-    @OneToOne(fetch = FetchType.EAGER , cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval = true)
     private FcmToken fcmToken;
+
 
     @Column(nullable = false , length = 20)
     private String nickname;
@@ -49,13 +50,12 @@ public class Member extends BaseEntity {
     @Column(name = "entrance_year" , nullable = false)
     private Integer entranceYear;
 
-
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false , length = 1)
-    private String sex;
+    private Gender sex;
 
     //인앱 알림 동의 여부
     @Column(name = "notification_setting" , nullable = false)
-    @ColumnDefault("true")
     private Boolean notificationSetting;
 
     @Column(name = "profile_img_url" , length = 250 , nullable = false)
@@ -63,16 +63,13 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_status")
-    @ColumnDefault("'USER'")
     private UserStatus userStatus;
 
-    @Column(name = "feedback_score")
-    @ColumnDefault("50")
-    private Integer feedbackScore = 50;
+    @Column(name = "feedback_score" , nullable = false)
+    private Integer feedbackScore;
 
-    @Column(name = "match_count")
-    @ColumnDefault("0")
-    private Integer matchCount = 0;
+    @Column(name = "match_count" , nullable = false)
+    private Integer matchCount;
 
     @Column(name = "member_key" , nullable = false , updatable = false , unique = true)
     private String memberKey;
@@ -82,7 +79,7 @@ public class Member extends BaseEntity {
             /*Dormitory dormitory*/
             String nickname ,
             int entranceYear ,
-            String sex ,
+            Gender sex ,
             boolean notificationSetting ,
             String profileImgUrl) {
 //        this.dormitory = dormitory;
@@ -91,8 +88,6 @@ public class Member extends BaseEntity {
         this.sex = sex;
         this.profileImgUrl = profileImgUrl;
         this.notificationSetting = notificationSetting;
-
-        //생성 시 기본값들 설정
         this.memberKey = UUID.randomUUID().toString();
         this.userStatus = UserStatus.USER;
         this.feedbackScore = 50;
@@ -100,7 +95,7 @@ public class Member extends BaseEntity {
     }
 
     //광고 수신 동의
-    public void toggleNotification(boolean isActive) {
+    public void toggleNotification() {
         this.notificationSetting = !this.notificationSetting;
     }
 
