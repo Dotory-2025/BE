@@ -48,7 +48,7 @@ public class Member extends BaseEntity {
     private Integer matchCount;
 
     @Column(name = "member_key" , nullable = false , updatable = false , unique = true)
-    private String memberKey;
+    private UUID memberKey;
 
     @Builder
     public Member(
@@ -64,7 +64,7 @@ public class Member extends BaseEntity {
         this.sex = sex;
         this.profileImgUrl = profileImgUrl;
         this.notificationSetting = notificationSetting;
-        this.memberKey = UUID.randomUUID().toString();
+        this.memberKey = UUID.randomUUID();
         this.userStatus = UserStatus.USER;
         this.feedbackScore = 50;
         this.matchCount = 0;
