@@ -1,4 +1,4 @@
-FROM openjdk:21-jdk-slim AS builder
+FROM oeclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY src src
 
 RUN ./gradlew bootJar -x test
 
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
