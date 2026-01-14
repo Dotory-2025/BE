@@ -1,3 +1,36 @@
 spring:
   application:
     name: dotory
+
+  jwt:
+    secret: ${JWT_SECRET_KEY}
+    tokens:
+      expire:
+        access_token: ${ACCESS_TOKEN_EXPIRE_TIME}
+        refresh_token: ${REFRESH_TOKEN_EXPIRE_TIME}
+
+  datasource:
+    url: ${DATASOURCE_URL}
+    driver-class-name: org.postgresql.Driver
+    username: dotory-db
+    password: ${DB_PASSWORD}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  cloud:
+    aws:
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+      cloudfront:
+        domain: ${AWS_CLOUDFRONT_DOMAIN}
+      region:
+        static: ${AWS_REGION}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
