@@ -38,8 +38,8 @@ spring:
   mail:
     host: smtp.worksmobile.com
     port: 587
-    username: dotoryinfo@dotory-app.kr
-    password: hudCYrrg2DwL
+    username: ${SMTP_USER}
+    password: ${SMTP_PASSWORD}
     properties:
       mail:
         debug: true
