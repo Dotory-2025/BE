@@ -1,6 +1,7 @@
 package com.dotoryteam.dotory.global.common.dto;
 
 import com.dotoryteam.dotory.global.common.exception.ApiException;
+import com.dotoryteam.dotory.global.security.dto.JwtTokens;
 import lombok.Builder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +31,8 @@ public record ApiResponse<T>(
                 .body(ApiResponse.<T>builder().data(data).build());
     }
 
-    public static <T> ResponseEntity<ApiResponse<T>> ofToken(T data, String token) {
+    public static <T> ResponseEntity<ApiResponse<T>> ofToken(T data) {
         return ResponseEntity.status(HttpStatus.OK)
-                .header("Authorization", token)
                 .body(ApiResponse.<T>builder().data(data).build());
     }
 

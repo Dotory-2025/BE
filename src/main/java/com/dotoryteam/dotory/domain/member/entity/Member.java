@@ -1,5 +1,6 @@
 package com.dotoryteam.dotory.domain.member.entity;
 
+import com.dotoryteam.dotory.domain.auth.entity.EmailVerification;
 import com.dotoryteam.dotory.domain.member.enums.Gender;
 import com.dotoryteam.dotory.domain.member.enums.UserStatus;
 import com.dotoryteam.dotory.global.common.BaseEntity;
@@ -19,6 +20,10 @@ public class Member extends BaseEntity {
     private Long id;
 
     //선호 기숙사
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "email_verification_id", nullable = false , unique = true)
+    private EmailVerification emailVerification;
 
     @Column(nullable = false , length = 20)
     private String nickname;

@@ -34,3 +34,28 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY_ID}
         secret-key: ${AWS_SECRET_ACCESS_KEY}
+
+  mail:
+    host: smtp.worksmobile.com
+    port: 587
+    username: dotoryinfo@dotory-app.kr
+    password: hudCYrrg2DwL
+    properties:
+      mail:
+        debug: true
+
+        smtp:
+          starttls:
+            enable: true
+          auth: true
+          ssl:
+            enable: true
+          transport:
+            protocol: smtp
+            mime:
+              charset: UTF-8
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+
