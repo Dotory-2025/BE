@@ -23,6 +23,12 @@ spring:
       hibernate:
         format_sql: true
 
+  spring:
+    data:
+      redis:
+        host: ${REDIS_HOST}
+        port: ${REDIS_PORT}
+
   cloud:
     aws:
       s3:
@@ -58,4 +64,5 @@ spring:
           timeout: 5000
           writetimeout: 5000
 
-
+server:
+  forward-headers-strategy: native
