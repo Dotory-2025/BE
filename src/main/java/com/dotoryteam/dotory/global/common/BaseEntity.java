@@ -20,16 +20,13 @@ public abstract class BaseEntity {
 
     @Setter
     @CreatedDate
-    @Comment("생성일")
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Comment("수정일")
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @Comment("삭제일")
     @Column(insertable = false)
     private LocalDateTime deletedAt;
 
