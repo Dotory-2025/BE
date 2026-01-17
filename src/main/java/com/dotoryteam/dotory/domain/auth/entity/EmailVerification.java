@@ -26,9 +26,9 @@ public class EmailVerification {
     private LocalDateTime firstVerificationTime;
 
     @Builder
-    public EmailVerification(String email, boolean isVerified, LocalDateTime firstVerificationTime, LocalDateTime verifiedAt) {
+    public EmailVerification(String email) {
         this.email = email;
-        this.isVerified = isVerified;
+        this.isVerified = true;
         this.firstVerificationTime = LocalDateTime.now();
     }
 }
