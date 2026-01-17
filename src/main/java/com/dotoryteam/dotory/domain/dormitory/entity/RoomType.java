@@ -1,6 +1,7 @@
 package com.dotoryteam.dotory.domain.dormitory.entity;
 
 import com.dotoryteam.dotory.global.common.BaseEntity;
+import com.dotoryteam.dotory.domain.member.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,11 +23,12 @@ public class RoomType extends BaseEntity {
     @Column(name = "capacity")
     private Integer capacity;
 
-    @Column(name = "sex", length = 1)
-    private String sex; // 'M' or 'F'
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sex", nullable = false)
+    private Gender sex;
 
     @Builder
-    public RoomType(Dormitory dormitory, Integer capacity, String sex) {
+    public RoomType(Dormitory dormitory, Integer capacity, Gender sex) {
         this.dormitory = dormitory;
         this.capacity = capacity;
         this.sex = sex;

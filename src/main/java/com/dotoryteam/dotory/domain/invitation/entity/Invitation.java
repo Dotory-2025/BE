@@ -4,12 +4,11 @@ import com.dotoryteam.dotory.domain.house.entity.House;
 // TODO: Member 엔티티 생성 후 주석 해제
 // import com.dotoryteam.dotory.domain.member.entity.Member;
 import com.dotoryteam.dotory.global.common.BaseEntity;
-import com.dotoryteam.dotory.global.common.enums.InvitationStatus;
+import com.dotoryteam.dotory.domain.invitation.enums.InvitationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "invitation",
@@ -45,30 +44,25 @@ public class Invitation extends BaseEntity {
     private House house;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     @ColumnDefault("'PENDING'")
     private InvitationStatus status;
 
-    @Column(name = "invited_at")
-    private LocalDateTime invitedAt;
-
     @Builder
-    public Invitation(Long senderId, Long receiverId, House house, InvitationStatus status, LocalDateTime invitedAt) {
+    public Invitation(Long senderId, Long receiverId, House house, InvitationStatus status) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.house = house;
-        this.status = status != null ? status : InvitationStatus.PENDING;  // 생성자에서 기본값 설정
-        this.invitedAt = invitedAt != null ? invitedAt : LocalDateTime.now();  // 생성자에서 기본값 설정
+        this.status = status != null ? status : InvitationStatus.PENDING;
     }
 
     // TODO: Member 엔티티 생성 후 주석 해제
     // @Builder
-    // public Invitation(Member sender, Member receiver, House house, InvitationStatus status, LocalDateTime invitedAt) {
+    // public Invitation(Member sender, Member receiver, House house, InvitationStatus status) {
     //     this.sender = sender;
     //     this.receiver = receiver;
     //     this.house = house;
     //     this.status = status != null ? status : InvitationStatus.PENDING;
-    //     this.invitedAt = invitedAt != null ? invitedAt : LocalDateTime.now();
     // }
 
     // 비즈니스 메서드
@@ -109,7 +103,6 @@ public class Invitation extends BaseEntity {
     //             .receiver(receiver)
     //             .house(house)
     //             .status(InvitationStatus.PENDING)
-    //             .invitedAt(LocalDateTime.now())
     //             .build();
     // }
 }

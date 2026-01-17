@@ -1,4 +1,4 @@
-package com.dotoryteam.dotory.global.common.enums;
+package com.dotoryteam.dotory.domain.house.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

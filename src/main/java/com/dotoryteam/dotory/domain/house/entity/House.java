@@ -2,7 +2,7 @@ package com.dotoryteam.dotory.domain.house.entity;
 
 import com.dotoryteam.dotory.domain.dormitory.entity.RoomType;
 import com.dotoryteam.dotory.global.common.BaseEntity;
-import com.dotoryteam.dotory.global.common.enums.Semester;
+import com.dotoryteam.dotory.domain.house.enums.Semester;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -22,8 +22,8 @@ public class House extends BaseEntity {
     @Column(name = "house_id")
     private Long id;
 
-    @Column(name = "house_key", nullable = false, unique = true, updatable = false)
-    private String houseKey;
+    @Column(name = "house_key", nullable = false, unique = true, updatable = false, columnDefinition = "UUID")
+    private UUID houseKey;
 
     @Column(name = "title")
     private String title;
@@ -51,7 +51,7 @@ public class House extends BaseEntity {
 
     @Builder
     public House(String title, String description, Semester semester, RoomType roomType) {
-        this.houseKey = UUID.randomUUID().toString();  // 생성자에서 UUID 생성
+        this.houseKey = UUID.randomUUID();
         this.title = title;
         this.description = description;
         this.semester = semester;
