@@ -1,14 +1,14 @@
 package com.dotoryteam.dotory.global.security.handler;
 
 import com.dotoryteam.dotory.global.common.dto.ApiResponse;
-import com.dotoryteam.dotory.global.security.enums.ErrorCode;
 
+import com.dotoryteam.dotory.global.common.exception.ApiException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
@@ -23,22 +23,23 @@ public class AuthenticationEntryPoint implements org.springframework.security.we
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         Object exception = request.getAttribute("exception");
 
-        ErrorCode errorCode;
-
-        if (exception instanceof ErrorCode) {
-            errorCode = (ErrorCode) exception;
-        } else {
-            errorCode = ErrorCode.UNAUTHORIZED;
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        String message = "인증에 실패했습니다.";
+        if (exception instanceof ApiException apiException) {
+            status = apiException.status;
+            message = apiException.getMessage();
         }
 
+        sendResponse(response , status , message);
+    }
+
+    private void sendResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(status.value());
 
-        ApiResponse<Object> apiResponse = ApiResponse.of(errorCode.getMessage());
-
+        ApiResponse<Object> apiResponse = ApiResponse.failedOf(status , message).getBody();
         String jsonResponse = objectMapper.writeValueAsString(apiResponse);
 
-        //{"message": 메시지 , "data": null}
         response.getWriter().write(jsonResponse);
     }
 }

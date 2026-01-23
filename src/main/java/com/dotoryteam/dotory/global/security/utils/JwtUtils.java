@@ -1,11 +1,8 @@
 package com.dotoryteam.dotory.global.security.utils;
 
 import com.dotoryteam.dotory.global.security.dto.JwtTokens;
-import com.dotoryteam.dotory.global.security.enums.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SecurityException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -86,22 +83,6 @@ public class JwtUtils {
         return new UsernamePasswordAuthenticationToken(principal , "", authorities);
     }
 
-    //filter 용 토큰 검증 로직 (잘못된 토큰이면 )
-    public boolean validateToken(String token , HttpServletRequest request) {
-        try {
-            Jwts.parser()
-                    .verifyWith(Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes()))
-                    .build()
-                    .parseSignedClaims(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            request.setAttribute("exception" , ErrorCode.INVALID_TOKEN);
-        } catch (ExpiredJwtException e) {
-            request.setAttribute("exception" , ErrorCode.EXPIRED_TOKEN);
-        }
-
-        return false;
-    }
 
     //service 레이어 전용 검증 로직 (서비스 레이어에선 T/F 여부만 필요)
         //사용자에게 받은 토큰을 다시 한번 검증하는 방식이 필요

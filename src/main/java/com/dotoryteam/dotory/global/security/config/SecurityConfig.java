@@ -1,6 +1,7 @@
 package com.dotoryteam.dotory.global.security.config;
 
 import com.dotoryteam.dotory.global.redis.service.SecurityRedisService;
+import com.dotoryteam.dotory.global.security.enums.UserRole;
 import com.dotoryteam.dotory.global.security.filter.JwtAuthenticateFilter;
 import com.dotoryteam.dotory.global.security.handler.AuthenticationEntryPoint;
 import com.dotoryteam.dotory.global.security.utils.JwtUtils;
@@ -42,8 +43,9 @@ public class SecurityConfig {
                                 , "/v3/api-docs/**"
                                 , "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ROLE_ADMIN")
-                        .anyRequest().hasAnyRole("ROLE_USER" , "ROLE_ADMIN")
+                        .requestMatchers("/api/v1/notifications/**").authenticated()
+                        .requestMatchers("/api/v1/admin/**").hasRole(UserRole.ROLE_ADMIN.toString())
+                        .anyRequest().hasAnyRole(UserRole.ROLE_USER.toString() , UserRole.ROLE_ADMIN.toString())
                 )
                 //예외 등록할 entry point 설정
                 .exceptionHandling(handler -> handler.authenticationEntryPoint(new AuthenticationEntryPoint()))
