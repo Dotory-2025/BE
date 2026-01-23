@@ -18,7 +18,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<VerifyResponse>> login(@RequestBody LoginReq loginReq) {
-        return ApiResponse.ok(authService.verify(loginReq.getEmail() , loginReq.getAuthCode()));
+        return ApiResponse.ok(authService.verify(
+                    loginReq.getEmail() ,
+                    loginReq.getAuthCode() ,
+                    loginReq.getFcmToken() ,
+                    loginReq.getDeviceType()
+                )
+        );
     }
 
     @PostMapping("/logout")

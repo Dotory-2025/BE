@@ -1,13 +1,11 @@
 package com.dotoryteam.dotory.domain.auth.service;
 
-import com.dotoryteam.dotory.domain.auth.exception.CustomAuthException;
+import com.dotoryteam.dotory.global.security.exception.CustomSecurityException;
 import com.dotoryteam.dotory.global.redis.service.SecurityRedisService;
-import com.dotoryteam.dotory.global.security.enums.ErrorCode;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.service.SecurityService;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -16,12 +14,11 @@ import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class EmailVerificationService {
     private final JavaMailSender mailSender;
     private final SecurityRedisService securityRedisService;
 
-    private static final String CODE_PREFIX = "CODE: ";
+    private static final String AUTH_CODE_PREFIX = "CODE: ";
     private static final long CODE_EXPIRATION = 300000L;
 
     public void sendVerificationCode(String email) {
@@ -32,12 +29,12 @@ public class EmailVerificationService {
             mailSender.send(message);
 
             securityRedisService.setValue(
-                    CODE_PREFIX + email ,
+                    AUTH_CODE_PREFIX + email ,
                     code ,
                     CODE_EXPIRATION
             );
         } catch (MessagingException e) {
-            throw new CustomAuthException(ErrorCode.MAIL_SEND_ERROR);
+            throw new CustomSecurityException(HttpStatus.INTERNAL_SERVER_ERROR , "메일 전송에 실패했습니다.");
         }
     }
 
