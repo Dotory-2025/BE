@@ -56,14 +56,14 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.4'
 
 	// AWS S3
-//	implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.3.0'
-//	implementation "io.awspring.cloud:spring-cloud-aws-starter-s3:3.3.0"
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.3.0'
+	implementation "io.awspring.cloud:spring-cloud-aws-starter-s3:3.3.0"
 
 	// MongoDB
 	//implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
 	//FireBase SDK
-	//implementation 'com.google.firebase:firebase-admin:9.2.0'
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
 
 	// Redis (알림 기능이 있으니..일단 추가해놓겠습니다 쓸 때 주석 해제해서 올려주세요)
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
