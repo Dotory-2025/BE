@@ -1,0 +1,11 @@
+# .gradle 은 임시 파일이나 로그들 저장하는 곳임
+.gradle
+.idea
+.vscode
+.git
+build
+out
+bin
+.DS_Store
+Thumbs.db
+.env
