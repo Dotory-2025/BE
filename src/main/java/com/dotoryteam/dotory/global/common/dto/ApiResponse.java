@@ -30,9 +30,8 @@ public record ApiResponse<T>(
                 .body(ApiResponse.<T>builder().data(data).build());
     }
 
-    public static <T> ResponseEntity<ApiResponse<T>> ofToken(T data, String token) {
+    public static <T> ResponseEntity<ApiResponse<T>> ofToken(T data) {
         return ResponseEntity.status(HttpStatus.OK)
-                .header("Authorization", token)
                 .body(ApiResponse.<T>builder().data(data).build());
     }
 
