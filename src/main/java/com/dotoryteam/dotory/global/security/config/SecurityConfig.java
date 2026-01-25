@@ -3,7 +3,7 @@ package com.dotoryteam.dotory.global.security.config;
 import com.dotoryteam.dotory.global.redis.service.SecurityRedisService;
 import com.dotoryteam.dotory.global.security.enums.UserRole;
 import com.dotoryteam.dotory.global.security.filter.JwtAuthenticateFilter;
-import com.dotoryteam.dotory.global.security.handler.AuthenticationEntryPoint;
+import com.dotoryteam.dotory.global.security.handler.CustomAuthenticationEntryPoint;
 import com.dotoryteam.dotory.global.security.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,31 +24,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JwtUtils jwtUtils;
     private final SecurityRedisService securityRedisService;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        String[] excludePath = {};
+
         http.csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        //role 처리 어떻게 할지 고민....
+
                         .requestMatchers(
                                 "/api/v1/auth/login"    //  로그인
                                 , "/api/v1/email-verification/**"   //  이메일 인증번호 발송 & 검증
-                                , "/api/v1/member/join"     //  회원가입
-                                , "/api/v1/member/email-duplicate"
-                                , "/api/v1/member/nickname-duplicate"
-
+                                , "/api/v1/members/join"     //  회원가입
+                                , "/api/v1/members/email-duplicate"
+                                , "/api/v1/members/nickname-duplicate"
                                 , "/swagger-ui/**"      //  swagger 사용
                                 , "/v3/api-docs/**"
                                 , "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/api/v1/notifications/**").authenticated()
-                        .requestMatchers("/api/v1/admin/**").hasRole(UserRole.ROLE_ADMIN.toString())
-                        .anyRequest().hasAnyRole(UserRole.ROLE_USER.toString() , UserRole.ROLE_ADMIN.toString())
+                        .requestMatchers("/api/v1/admin/**").hasRole(UserRole.ADMIN.toString())
+                        .anyRequest().hasAnyRole(UserRole.USER.toString() , UserRole.ADMIN.toString())
                 )
                 //예외 등록할 entry point 설정
-                .exceptionHandling(handler -> handler.authenticationEntryPoint(new AuthenticationEntryPoint()))
+                .exceptionHandling(handler -> handler.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .addFilterBefore(
                         new JwtAuthenticateFilter(jwtUtils , securityRedisService) ,
                         UsernamePasswordAuthenticationFilter.class

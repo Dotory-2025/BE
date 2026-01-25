@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.UUID;
 
@@ -55,15 +56,15 @@ public class AuthService {
         }
 
         //fcm 토큰 발급된 적이 있는지 판별
-        if (!fcmTokenRepository.existsByFcmToken(fcmToken)) {
-            FcmToken newFcmToken = FcmToken.builder()
-                    .member(memberRepository.findByEmail(email).orElseThrow(()
-                            ->  new MemberNotFoundException(HttpStatus.NOT_FOUND , "해당 사용자를 찾을 수 없습니다.")))
-                    .fcmToken(fcmToken)
-                    .deviceType(deviceType)
-                    .build();
-            fcmTokenRepository.save(newFcmToken);
-        }
+//        if (!fcmTokenRepository.existsByFcmToken(fcmToken)) {
+//            FcmToken newFcmToken = FcmToken.builder()
+//                    .member(memberRepository.findByEmail(email).orElseThrow(()
+//                            ->  new MemberNotFoundException(HttpStatus.NOT_FOUND , "해당 사용자를 찾을 수 없습니다.")))
+//                    .fcmToken(fcmToken)
+//                    .deviceType(deviceType)
+//                    .build();
+//            fcmTokenRepository.save(newFcmToken);
+//        }
 
         //가입 된 사용자인지 아닌지 여부
         if (memberRepository.findByEmail(email).isPresent()) {
@@ -82,7 +83,7 @@ public class AuthService {
         } else {
             String signupToken = UUID.randomUUID().toString();
             //멤버가 아니면 회원가입 후 토큰 발부를 위한 임시 출입증 발급
-            securityRedisService.setValue(SIGN_UP_PREFIX + signupToken , email , 1800000L);
+            securityRedisService.setValue(SIGN_UP_PREFIX + email , signupToken , 1800000L);
 
             return VerifyResponse.builder()
                     .isMember(false)
@@ -93,7 +94,9 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(String accessToken) {
+    public void logout(String requestAccessTokenInHeader) {
+        String accessToken = resolveToken(requestAccessTokenInHeader);
+
         Authentication authentication = jwtUtils.getAuthentication(accessToken);
         String email = authentication.getName();
         //refreshToken 삭제
@@ -107,25 +110,30 @@ public class AuthService {
     }
 
     @Transactional
-    public JwtTokens reissue(String refreshToken) {
-        //재발급을 위해 기존 토큰 유효성 검사
-            //토큰 만료 여부 , 형태가 이상한 토큰 검증
+    public JwtTokens reissue(String requestRefreshToken) {
+        // ▼▼▼ [추가] "Bearer " 제거 로직 (이게 없으면 오류!) ▼▼▼
+        String refreshToken = resolveToken(requestRefreshToken);
+
+        // 1. 토큰 유효성 검사 (이제 순수 토큰이라 검증 가능)
         if (!jwtUtils.validateToken(refreshToken)) {
             throw new InvalidTokenInAuthException(HttpStatus.BAD_REQUEST , "유효하지 않은 토큰입니다.");
         }
 
-        String email = jwtUtils.getAuthentication(refreshToken).getName();
+        // 2. 이메일 추출
+        String email = jwtUtils.getUserEmail(refreshToken);
+
+        // 3. Redis에서 저장된 토큰 가져오기
         String savedToken = securityRedisService.getValue(RT_PREFIX + email);
 
-        //기존 토큰과 redis 에 저장된 토큰값 비교하기
+        // 4. 기존 토큰과 비교 (Bearer를 뗐으니 이제 정확히 비교됨)
         if (!refreshToken.equals(savedToken)) {
-            //토큰이 기존 발급받았던 토큰이랑 같지 않으면 exception 던지기
-            throw new InvalidTokenInAuthException(HttpStatus.BAD_REQUEST , "유효하지 않은 토큰입니다.");
+            throw new InvalidTokenInAuthException(HttpStatus.BAD_REQUEST , "토큰 정보가 일치하지 않습니다.");
         }
 
+        // 5. 새 토큰 생성
         JwtTokens tokens = jwtUtils.generateTokens(email);
 
-        //새 토큰으로 덮어쓰기 (이러면 기존 refresh token 을 삭제하는 코드가 필요없음)
+        // 6. Redis 업데이트 (덮어쓰기)
         securityRedisService.setValue(
                 RT_PREFIX + email
                 , tokens.getRefreshToken()
@@ -133,6 +141,13 @@ public class AuthService {
         );
 
         return tokens;
+    }
+
+    private String resolveToken(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            return token.substring(7);
+        }
+        return token; // Bearer가 없으면 그냥 반환 (혹은 예외처리)
     }
 
 }

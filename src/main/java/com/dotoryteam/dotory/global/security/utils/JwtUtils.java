@@ -83,6 +83,9 @@ public class JwtUtils {
         return new UsernamePasswordAuthenticationToken(principal , "", authorities);
     }
 
+    public String getUserEmail(String token) {
+        return parseClaims(token).getSubject();
+    }
 
     //service 레이어 전용 검증 로직 (서비스 레이어에선 T/F 여부만 필요)
         //사용자에게 받은 토큰을 다시 한번 검증하는 방식이 필요

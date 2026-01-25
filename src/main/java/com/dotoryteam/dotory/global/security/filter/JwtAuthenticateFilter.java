@@ -41,8 +41,9 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
                 if (!redisService.isBlackList("BL:" + token)) {
                     Authentication authentication = jwtUtils.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                } else
+                } else {
                     throw new LoggedOutTokenException();
+                }
             }
         } catch (ExpiredJwtException e) {
             request.setAttribute("exception" , new CustomExpiredJwtTokenException(HttpStatus.UNAUTHORIZED , "만료된 토큰입니다."));
@@ -53,6 +54,8 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             request.setAttribute("exception" , new CustomSecurityException(HttpStatus.INTERNAL_SERVER_ERROR , "서버 내부 오류입니다."));
         }
+
+        filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {

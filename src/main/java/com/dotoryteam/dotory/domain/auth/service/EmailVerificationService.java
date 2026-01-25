@@ -5,6 +5,7 @@ import com.dotoryteam.dotory.global.redis.service.SecurityRedisService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -17,6 +18,9 @@ import java.security.SecureRandom;
 public class EmailVerificationService {
     private final JavaMailSender mailSender;
     private final SecurityRedisService securityRedisService;
+
+    @Value("${spring.mail.username}")
+    private String senderEmail;
 
     private static final String AUTH_CODE_PREFIX = "CODE:";
     private static final long CODE_EXPIRATION = 300000L;
@@ -55,6 +59,7 @@ public class EmailVerificationService {
 
         helper.setTo(email);
         helper.setSubject(title);
+        helper.setFrom(senderEmail);
         helper.setText("<div><h1>Dotory 인증번호 안내입니다.</h1>" +
                 "<h3>아래 인증번호를 입력해주세요.</h3>" +
                 "<h1>" + code + "</h1>" +
