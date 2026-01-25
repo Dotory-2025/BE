@@ -1,5 +1,8 @@
 package com.dotoryteam.dotory.domain.member.entity;
 
+import com.dotoryteam.dotory.domain.auth.entity.EmailVerification;
+import com.dotoryteam.dotory.domain.lifestyle.entity.Lifestyle;
+import com.dotoryteam.dotory.domain.lifestyle.entity.MemberLifestyle;
 import com.dotoryteam.dotory.domain.member.enums.Gender;
 import com.dotoryteam.dotory.domain.member.enums.UserStatus;
 import com.dotoryteam.dotory.global.common.BaseEntity;
@@ -9,6 +12,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -19,6 +24,13 @@ public class Member extends BaseEntity {
     private Long id;
 
     //선호 기숙사
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL , orphanRemoval = true)
+    private List<Lifestyle> lifestyles = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "email_verification_id", nullable = false , unique = true)
+    private EmailVerification emailVerification;
 
     @Column(nullable = false , length = 20)
     private String nickname;
@@ -56,14 +68,15 @@ public class Member extends BaseEntity {
             String nickname ,
             int entranceYear ,
             Gender sex ,
-            boolean notificationSetting ,
+            List<Lifestyle> lifestyles ,
             String profileImgUrl) {
 //        this.dormitory = dormitory;
         this.nickname = nickname;
         this.entranceYear = entranceYear;
         this.sex = sex;
         this.profileImgUrl = profileImgUrl;
-        this.notificationSetting = notificationSetting;
+        this.lifestyles = lifestyles;
+        this.notificationSetting = true;
         this.memberKey = UUID.randomUUID();
         this.userStatus = UserStatus.USER;
         this.feedbackScore = 50;
