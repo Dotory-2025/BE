@@ -16,12 +16,17 @@ public class Lifestyle {
     @Column(nullable = false , unique = true , length = 20)
     private String name;
 
+    @Column(nullable = false , unique = true)
+    private String code;
+
     @Builder
-    public Lifestyle(String name) {
+    public Lifestyle(String name , String code) {
         this.name = name;
+        this.code = code;
     }
 
-    public void updateLifestyle(String lifestyleName) {
-        this.name = lifestyleName;
+    public void updateLifestyle(String lifestyleName , String lifestyleCode) {
+        if (lifestyleName != null) this.name = lifestyleName;
+        if (lifestyleCode != null) this.code = lifestyleCode;
     }
 }
