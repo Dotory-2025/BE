@@ -36,33 +36,27 @@ public class LifestyleService {
     }
 
     public void addLifestyle(LifestyleManageDTO add) {
+        if (lifestyleRepository.existsByCode(add.getCode()))
+            throw new AlreadyExistLifestyleCodeException();
+
+        if (lifestyleRepository.existsByName(add.getLifestyleName()))
+            throw new AlreadyExistLifestyleNameException();
+
         Lifestyle lifestyle = Lifestyle.builder()
                 .name(add.getLifestyleName())
                 .code(add.getCode())
                 .build();
+
         lifestyleRepository.save(lifestyle);
     }
 
     @Transactional
     public void updateLifestyle(LifestyleManageDTO update) {
-        System.out.println(update.getId());
         if (update.getId() == null)
             throw new LifestyleNotFoundException();
 
         Lifestyle lifestyle = lifestyleRepository.findByLifestyleId(update.getId())
                 .orElseThrow(LifestyleNotFoundException::new);
-
-        if (update.getLifestyleName() != null && !update.getLifestyleName().equals(lifestyle.getName())) {
-            if (lifestyleRepository.existsByName(update.getLifestyleName())) {
-                throw new AlreadyExistLifestyleNameException();
-            }
-        }
-
-        if (update.getCode() != null && !update.getCode().equals(lifestyle.getCode())) {
-            if (lifestyleRepository.existsByCode(update.getCode())) {
-                throw new AlreadyExistLifestyleCodeException();
-            }
-        }
 
         lifestyle.updateLifestyle(update.getLifestyleName(), update.getCode());
     }
