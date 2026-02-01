@@ -44,7 +44,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/myserver
+            cd ~/dotory
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/my-spring-app:latest
             sudo docker compose down spring-app
             sudo docker compose up -d spring-app
