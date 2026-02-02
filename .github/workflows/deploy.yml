@@ -47,5 +47,5 @@ jobs:
             cd ~/dotory
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/my-spring-app:latest
             sudo docker compose down spring-app
-            sudo docker compose up -d spring-app
+            sudo docker-compose up -d --force-recreate spring-app
             sudo docker image prune -f
