@@ -23,12 +23,6 @@ public class CustomAuthenticationEntryPoint implements org.springframework.secur
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         Object exception = request.getAttribute("exception");
 
-        if (exception != null) {
-            System.out.println("필터에서 발생한 에러: " + exception.getClass().getName() + " / 메시지: " + ((Exception) exception).getMessage());
-        } else {
-            System.out.println("인증 실패 (Security 기본): " + authException.getMessage());
-        }
-
         HttpStatus status = HttpStatus.UNAUTHORIZED;
         String message = "인증에 실패했습니다.";
         if (exception instanceof ApiException apiException) {

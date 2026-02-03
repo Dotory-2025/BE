@@ -4,7 +4,6 @@ import com.dotoryteam.dotory.domain.auth.dto.request.EmailSenderReq;
 import com.dotoryteam.dotory.domain.auth.service.EmailVerificationService;
 import com.dotoryteam.dotory.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

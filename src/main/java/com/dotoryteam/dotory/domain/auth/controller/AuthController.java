@@ -42,10 +42,4 @@ public class AuthController {
 
         return ApiResponse.ofToken(jwtTokens);
     }
-
-    @DeleteMapping("/delete")
-    public ResponseEntity<ApiResponse<Void>> delete(@RequestParam String email) {
-        authService.deleteMember(email);
-        return ApiResponse.ok();
-    }
 }

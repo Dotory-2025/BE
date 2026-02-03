@@ -45,8 +45,6 @@ public class SecurityConfig {
                                 , "/api/v1/members/nickname-duplicate"
                                 , "/api/v1/auth/delete"
 
-                                , "/api/v1/members/switch"
-
                                 , "/swagger-ui/**"      //  swagger 사용
                                 , "/v3/api-docs/**"
                                 , "/swagger-ui.html"
