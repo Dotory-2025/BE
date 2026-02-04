@@ -37,9 +37,6 @@ public class CustomAuthenticationEntryPoint implements org.springframework.secur
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(status.value());
 
-        //ApiResponse.failedOf(status , message).getBody()를 쓴 경우 nul 반환 가능성 있음
-        //별도의 메서드로 처리하는게 아니라 builder 로 처리해 버리면 편함
-        //이러면 responseEntity 를 벗길 필요도 없어짐 (getBody 쓸 필요가 없어짐)
         ApiResponse<Object> apiResponse = new ApiResponse<>(message , null);
 
         String jsonResponse = objectMapper.writeValueAsString(apiResponse);
