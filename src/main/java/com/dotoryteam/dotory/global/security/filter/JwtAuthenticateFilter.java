@@ -36,7 +36,6 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
         try {
             if (token != null) {
-                //블랙리스트에 넣기
                 if (!redisService.isBlackList("BL:" + token)) {
                     Authentication authentication = jwtUtils.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
