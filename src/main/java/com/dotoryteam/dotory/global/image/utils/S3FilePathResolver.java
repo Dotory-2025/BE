@@ -9,6 +9,6 @@ public class S3FilePathResolver {
     public String createPath(String prefix, String originalFileName) {
         String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
         String uuid = UUID.randomUUID().toString();
-        return prefix + "/Dotory" + "-" + uuid + "." + extension;
+        return prefix + "/DOTORY" + "_" + uuid + "." + extension;
     }
 }

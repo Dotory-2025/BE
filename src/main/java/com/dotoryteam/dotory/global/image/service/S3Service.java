@@ -1,20 +1,19 @@
 package com.dotoryteam.dotory.global.image.service;
 
-import com.dotoryteam.dotory.global.common.enums.AcceptableFileType;
 import com.dotoryteam.dotory.global.common.utils.GlobalFileValidator;
 import com.dotoryteam.dotory.global.image.dto.response.PresignedUrlResponse;
+import com.dotoryteam.dotory.global.image.enums.FileDirectory;
+import com.dotoryteam.dotory.global.image.exception.FileSizeTooBigException;
 import com.dotoryteam.dotory.global.image.utils.S3FilePathResolver;
 import com.dotoryteam.dotory.global.image.utils.S3Uploader;
 import com.dotoryteam.dotory.global.image.utils.S3UrlGenerator;
+import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
-import java.time.Duration;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +22,7 @@ public class S3Service {
     private final GlobalFileValidator fileValidator;
     private final S3Uploader s3Uploader;
     private final S3UrlGenerator urlGenerator;
+    private final S3Template s3Template;
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
@@ -30,20 +30,28 @@ public class S3Service {
     @Value("${spring.cloud.aws.cloudfront.domain}")
     private String cloudFrontDomain;
 
-    //presigned 주소 받기
-    public PresignedUrlResponse getPresignedUrl(String prefix, String originalFilename) {
+    public PresignedUrlResponse getPresignedUrl(String prefix, String originalFilename , long fileSize) {
+        FileDirectory directory = FileDirectory.of(prefix);
+
+        if (fileSize > directory.getFileSize()) {
+            throw new FileSizeTooBigException(directory.getFileSize());
+        }
+
         String contentType = fileValidator.validateAndGetExtension(originalFilename).getMimeType();
+        String key = pathResolver.createPath(directory.getPrefix() , originalFilename);
+        PutObjectRequest objectRequest = s3Uploader.createPutObjectRequest(key , contentType , fileSize);
 
-        String key = pathResolver.createPath(prefix , originalFilename);
-
-        PutObjectRequest objectRequest = s3Uploader.createPutObjectRequest(key , contentType);
-
-        String url = urlGenerator.createPresignedUrl(objectRequest);
+        String url = urlGenerator.createPresignedUrl(directory.getUploadTime() , objectRequest);
 
         return new PresignedUrlResponse(url , key);
     }
 
-    // 2. DB에 저장하거나 프론트엔드에 보여줄 때는 CloudFront URL 반환
+    private void deleteFile(String fileKey) {
+        if (!StringUtils.hasText(fileKey)) return;
+
+        s3Template.deleteObject(bucket , fileKey);
+    }
+
     public String getCloudFrontUrl(String storedFileName) {
         return cloudFrontDomain + "/" + storedFileName;
     }

@@ -3,9 +3,9 @@ package com.dotoryteam.dotory.global.image.exception;
 import com.dotoryteam.dotory.global.common.exception.ApiException;
 import org.springframework.http.HttpStatus;
 
-public class InvalidExtensionException extends ApiException {
-    private static final String MESSAGE = "잘못된 형식의 파일입니다.";
-    public InvalidExtensionException() {
+public class InvalidDirectoryException extends ApiException {
+    private static final String MESSAGE = "잘못된 파일 디렉토리명 입니다.";
+    public InvalidDirectoryException() {
         super(HttpStatus.BAD_REQUEST , MESSAGE);
     }
 }

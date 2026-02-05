@@ -17,17 +17,15 @@ public class S3UrlGenerator {
 
     private final S3Presigner s3Presigner;
 
-    //presigned url 생성
-    public String createPresignedUrl(PutObjectRequest putObjectRequest) {
+    public String createPresignedUrl(Duration duration , PutObjectRequest putObjectRequest) {
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5))
+                .signatureDuration(duration)
                 .putObjectRequest(putObjectRequest)
                 .build();
 
         return s3Presigner.presignPutObject(presignRequest).url().toString();
     }
 
-    //cloud front url 생성
     public String createCloudFrontUrl(String storedFileName) {
         return cloudFrontDomain + "/" + storedFileName;
     }

@@ -11,11 +11,12 @@ public class S3Uploader {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
 
-    public PutObjectRequest createPutObjectRequest(String key , String contentType) {
+    public PutObjectRequest createPutObjectRequest(String key , String contentType , long fileSize) {
         return PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
                 .contentType(contentType)
+                .contentLength(fileSize)
                 .build();
     }
 }
