@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MemberRepositoryCustom {
+    Optional<Member> findById(long id);
     Optional<Member> findByEmail(String email);
     Optional<Member> findByMemberUuid(UUID memberUuid);
     CursorResult<MemberSearchRes> searchMembers(

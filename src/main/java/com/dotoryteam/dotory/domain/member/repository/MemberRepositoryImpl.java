@@ -6,6 +6,7 @@ import com.dotoryteam.dotory.domain.member.entity.Member;
 import com.dotoryteam.dotory.domain.member.enums.UserStatus;
 import com.dotoryteam.dotory.global.common.dto.CursorResult;
 import com.dotoryteam.dotory.global.common.utils.CursorUtils;
+import com.dotoryteam.dotory.global.image.utils.S3UrlGenerator;
 import com.dotoryteam.dotory.global.security.enums.UserRole;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -25,6 +26,14 @@ import static com.dotoryteam.dotory.domain.member.entity.QMember.member;
 @RequiredArgsConstructor
 public class MemberRepositoryImpl implements MemberRepositoryCustom {
     private final JPAQueryFactory queryFactory;
+    private final S3UrlGenerator urlGenerator;
+
+    public Optional<Member> findById(long id) {
+        return Optional.ofNullable(queryFactory.selectFrom(member)
+                .where(member.id.eq(id))
+                .fetchOne()
+        );
+    }
 
     public Optional<Member> findByEmail(String email) {
         return Optional.ofNullable(queryFactory.select(member)
@@ -77,7 +86,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                         m.getMemberKey() ,
                         m.getNickname() ,
                         m.getMemberLifestyle() , // 이미 fetchJoin 으로 가져온 값이라서 다시 inner join 을 하지 않음
-                        m.getProfileImgUrl()
+                        urlGenerator.createCloudFrontUrl(m.getProfileImgUrl())  //  cloudfront 도메인 붙임
                 ))
                 .collect(Collectors.toList());
 

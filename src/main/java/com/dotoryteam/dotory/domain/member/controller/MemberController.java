@@ -4,14 +4,13 @@ import com.dotoryteam.dotory.domain.member.dto.request.JoinReq;
 import com.dotoryteam.dotory.domain.member.dto.request.UpdateMemberDetailsReq;
 import com.dotoryteam.dotory.domain.member.dto.response.MemberDetailRes;
 import com.dotoryteam.dotory.domain.member.dto.response.MemberSearchRes;
-import com.dotoryteam.dotory.domain.member.entity.Member;
-import com.dotoryteam.dotory.domain.member.exception.MemberNotFoundException;
-import com.dotoryteam.dotory.domain.member.repository.MemberRepository;
 import com.dotoryteam.dotory.domain.member.service.MemberService;
 import com.dotoryteam.dotory.global.common.dto.ApiResponse;
 import com.dotoryteam.dotory.global.common.dto.CursorResult;
 import com.dotoryteam.dotory.global.security.dto.JwtTokens;
 import com.dotoryteam.dotory.global.security.utils.UserPrincipal;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,10 +24,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/members")
 public class MemberController {
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
 
     @PostMapping("/join")
-    public ResponseEntity<ApiResponse<JwtTokens>> join(@RequestBody JoinReq joinReq) {
+    public ResponseEntity<ApiResponse<JwtTokens>> join(@RequestBody @Valid JoinReq joinReq) {
         JwtTokens tokens = memberService.join(joinReq);
 
         return ApiResponse.ofToken(tokens);
@@ -65,15 +63,24 @@ public class MemberController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<MemberDetailRes>> getMyDetails(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return ApiResponse.ok(memberService.getMyDetail(userPrincipal.getMemberKey()));
+        return ApiResponse.ok(memberService.getMyDetail(userPrincipal.getId()));
     }
 
-    @PostMapping("/me")
+    @PatchMapping("/me")
     public ResponseEntity<ApiResponse<Void>> changeMemberDetails(
             @AuthenticationPrincipal UserPrincipal userPrincipal ,
             @RequestBody UpdateMemberDetailsReq updateMemberDetailsReq
             ) {
-        memberService.updateMe(userPrincipal.getMemberKey() , updateMemberDetailsReq);
+        memberService.updateMe(userPrincipal.getId() , updateMemberDetailsReq);
+        return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> withdraw(
+            @AuthenticationPrincipal UserPrincipal userPrincipal ,
+            HttpServletRequest request
+    ) {
+        memberService.deleteMember(userPrincipal.getId() , request.getHeader("Authorization"));
         return ApiResponse.ok();
     }
 }
