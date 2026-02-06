@@ -1,5 +1,6 @@
 package com.dotoryteam.dotory.global.image.enums;
 
+import com.dotoryteam.dotory.global.image.exception.ExtensionEmptyException;
 import com.dotoryteam.dotory.global.image.exception.InvalidDirectoryException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,9 @@ public enum FileDirectory {
     private final long fileSize;
 
     public static FileDirectory of(String inputPrefix) {
+        if (inputPrefix == null || inputPrefix.isEmpty()) {
+            throw new ExtensionEmptyException();
+        }
         return Arrays.stream(values())
                 .filter(dir -> dir.prefix.equalsIgnoreCase(inputPrefix))
                 .findFirst()
