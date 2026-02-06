@@ -1,0 +1,87 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.9'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.dotoryteam'
+version = '0.0.1-SNAPSHOT'
+description = 'Dormitory Matching Service for Yonsei'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	//lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.projectlombok:lombok:1.18.28'
+
+	//test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//db
+	implementation 'org.postgresql:postgresql'
+
+	//swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.12'
+
+	//jwt
+	//0.12.4 버전을 선택한 이유 :
+		//0.11.5 는 java 8 최적화이고 0.12.4 는 java 21 최적화
+		//불명확한 표현 수정 (getBody - > getPayload 같이)
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.4'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.4'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.4'
+
+	// AWS S3
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.3.0'
+	implementation "io.awspring.cloud:spring-cloud-aws-starter-s3:3.3.0"
+
+	// MongoDB
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+	//FireBase SDK
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+	// Redis (알림 기능이 있으니..일단 추가해놓겠습니다 쓸 때 주석 해제해서 올려주세요)
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// WebSocket (실시간 채팅용) <- 얘도 쓸 때 아래꺼 주석해제해서 쓰면 됩니두
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	//queryDSL은 필요하면 이후에 추가 예정입니다..
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+
+	//email
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
