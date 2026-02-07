@@ -4,13 +4,13 @@ import com.dotoryteam.dotory.domain.member.dto.request.JoinReq;
 import com.dotoryteam.dotory.domain.member.dto.request.UpdateMemberDetailsReq;
 import com.dotoryteam.dotory.domain.member.dto.response.MemberDetailRes;
 import com.dotoryteam.dotory.domain.member.dto.response.MemberSearchRes;
+import com.dotoryteam.dotory.domain.member.repository.MemberRepository;
 import com.dotoryteam.dotory.domain.member.service.MemberService;
 import com.dotoryteam.dotory.global.common.dto.ApiResponse;
 import com.dotoryteam.dotory.global.common.dto.CursorResult;
 import com.dotoryteam.dotory.global.security.dto.JwtTokens;
 import com.dotoryteam.dotory.global.security.utils.UserPrincipal;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,7 +26,7 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/join")
-    public ResponseEntity<ApiResponse<JwtTokens>> join(@RequestBody @Valid JoinReq joinReq) {
+    public ResponseEntity<ApiResponse<JwtTokens>> join(@RequestBody JoinReq joinReq) {
         JwtTokens tokens = memberService.join(joinReq);
 
         return ApiResponse.ofToken(tokens);
@@ -57,7 +57,7 @@ public class MemberController {
     }
 
     @GetMapping("/{memberKey}")
-    public ResponseEntity<ApiResponse<MemberDetailRes>> getMemberDetail(@RequestParam UUID memberKey) {
+    public ResponseEntity<ApiResponse<MemberDetailRes>> getMemberDetail(@PathVariable UUID memberKey) {
         return ApiResponse.ok(memberService.getDetails(memberKey));
     }
 
