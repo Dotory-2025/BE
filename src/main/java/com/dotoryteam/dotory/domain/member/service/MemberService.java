@@ -7,9 +7,13 @@ import com.dotoryteam.dotory.domain.member.dto.request.UpdateMemberDetailsReq;
 import com.dotoryteam.dotory.domain.member.dto.response.MemberDetailRes;
 import com.dotoryteam.dotory.domain.member.dto.response.MemberSearchRes;
 import com.dotoryteam.dotory.domain.member.entity.Member;
+import com.dotoryteam.dotory.domain.member.enums.UserStatus;
 import com.dotoryteam.dotory.domain.member.exception.*;
 import com.dotoryteam.dotory.domain.member.repository.MemberRepository;
+import com.dotoryteam.dotory.domain.member.utils.NicknameKeywordParser;
 import com.dotoryteam.dotory.global.common.dto.CursorResult;
+import com.dotoryteam.dotory.global.image.service.S3Service;
+import com.dotoryteam.dotory.global.image.utils.S3UrlGenerator;
 import com.dotoryteam.dotory.global.redis.service.SecurityRedisService;
 import com.dotoryteam.dotory.global.security.dto.JwtTokens;
 import com.dotoryteam.dotory.global.security.enums.UserRole;
@@ -19,11 +23,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,14 +35,20 @@ public class MemberService {
     private final LifestyleService lifestyleService;
     private final SecurityRedisService securityRedisService;
     private final MemberDummyData dummyData;
+    private final NicknameKeywordParser memberKeywordParser;
+    private final S3Service s3Service;
+    private final S3UrlGenerator urlGenerator;
 
     private static final String AUTH_CODE_PREFIX = "SIGNUP:";
     private static final String RT_PREFIX = "RT:";
+    private static final String BL_PREFIX = "BL:";
 
     @Value("${spring.jwt.tokens.expire.refresh_token}")
     private Long refreshTokenExpire;
 
-    private static final String regex = "[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ\\u3040-\\u309F\\u30A0-\\u30FF\\u4E00-\\u9FFF\\uD800-\\uDFFF\\s]";
+    @Value("${spring.jwt.tokens.expire.access_token}")
+    private Long accessTokenExpire;
+
     private static final String allowedRegex = "[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ\\u3040-\\u309F\\u30A0-\\u30FF\\u4E00-\\u9FFF\\uD800-\\uDFFF\\s]*";
 
     /**
@@ -56,6 +63,8 @@ public class MemberService {
 
         if (!joinReq.getSignUpToken().equals(
                 securityRedisService.getValue(AUTH_CODE_PREFIX + joinReq.getEmail()))) {
+            //이전 요청이 사라지지 않고 지속적으로 문제를 발생
+            securityRedisService.deleteValue(AUTH_CODE_PREFIX + joinReq.getEmail());
             throw new JoinRequestExpiredException();
         }
 
@@ -87,6 +96,8 @@ public class MemberService {
                 , refreshTokenExpire
         );
 
+        securityRedisService.deleteValue(AUTH_CODE_PREFIX + joinReq.getEmail());
+
         return tokens;
     }
 
@@ -113,9 +124,8 @@ public class MemberService {
         List<Lifestyle> lifestyles = lifestyleService.convert(lifestyleCodes);
 
         return memberRepository.searchMembers(
-                myMemberKey , keywordParser(nicknames) , minEntrance , maxEntrance , lifestyles , cursor , size
+                myMemberKey , memberKeywordParser.keywordParser(nicknames) , minEntrance , maxEntrance , lifestyles , cursor , size
         );
-
     }
 
     /**
@@ -123,7 +133,7 @@ public class MemberService {
      * @param nickname: 닉네임 중복 확인 시 특수문자 존재 여부 확인용 ( allowedRegex: 사용 가능한 글자 범위 - 한글 , 영어 , 일본어 , 중국어 , 이모티콘 )
      */
     public void isNicknameDuplicated(String nickname) {
-        if (nickname == null || nickname.isEmpty()) {
+        if (nickname == null || nickname.isBlank()) {
             throw new InvalidNicknameFormatException();
         }
 
@@ -139,10 +149,10 @@ public class MemberService {
 
     /**
      * 해당 멤버의 디테일 정보 보기
-     * @param memberKey: 해당 멤버의 UUID
+     * @param id: 해당 멤버의 PK
      */
-    public MemberDetailRes getMyDetail(UUID memberKey) {
-        Member member = memberRepository.findByMemberUuid(memberKey)
+    public MemberDetailRes getMyDetail(long id) {
+        Member member = memberRepository.findById(id)
                 .orElseThrow(MemberNotFoundException::new);
 
         //형 변환 먼저 들어가기
@@ -151,13 +161,12 @@ public class MemberService {
                         .getName())
                 .toList();
 
-
         return MemberDetailRes.builder()
                 .nickname(member.getNickname())
                 .favorDormitoryName("세연학사")                         //  더미
                 .entranceYear(member.getEntranceYear())
                 .lifestyles(lifestyles)
-                .profileImgUrl(member.getProfileImgUrl())
+                .profileImgUrl(urlGenerator.createCloudFrontUrl(member.getProfileImgUrl()))
                 .matchCount(member.getMatchCount())
                 .feedbackScore(member.getFeedbackScore())
                 .memberHouse(dummyData.DummyDataForHouse())                   //  더미
@@ -178,15 +187,15 @@ public class MemberService {
                 .nickname(member.getNickname())
                 .favorDormitoryName("세연학사")      //  아직 안만들어서 임시
                 .entranceYear(member.getEntranceYear())
-                .profileImgUrl(member.getProfileImgUrl())
+                .profileImgUrl(urlGenerator.createCloudFrontUrl(member.getProfileImgUrl()))
                 .matchCount(member.getMatchCount())
                 .feedbackScore(member.getFeedbackScore())
                 .build();
     }
 
     @Transactional
-    public void updateMe(UUID memberKey , UpdateMemberDetailsReq updateMemberDetailsReq) {
-        Member member = memberRepository.findByMemberUuid(memberKey)
+    public void updateMe(long id , UpdateMemberDetailsReq updateMemberDetailsReq) {
+        Member member = memberRepository.findById(id)
                 .orElseThrow(MemberNotFoundException::new);
 
         List<Lifestyle> lifestyles = lifestyleService.convert(updateMemberDetailsReq.getLifestyleCodes());
@@ -205,33 +214,35 @@ public class MemberService {
         member.updateDormitory("청연학사");
     }
 
+    @Transactional
+    public void deleteMember(long id , String accessToken) {
+        Member member = memberRepository.findById(id).orElseThrow(MemberNotFoundException::new);
 
-    /**
-     * 사용자 검색 용 키워드 파서 ( 사용자 닉네임은 특수문자가 불가능하므로 서버에서 global 이중검증 로직으로 사용되긴 애매함 )
-     * @param keywords: 검색창에 입력한 전체 값들을 받아옴
-     * @return: 사용 불가능한 특수문자들 , 불필요한 띄어쓰기 들을 제거 후 List 로 반환
-     *
-     * 여러 명 찾는 경우
-     *     특수 문자 자체가 안되므로 프론트 , 뱍앤드 이중검증
-     *     한국어 , 영어 , 일본어 , 중국어 가능하도록
-     *     닉네임 중복 시 오류 던지는 로직이랑 같이 해보려 했는데 둘의 성격이 너무 다름
-     *     닉네임 중복은 null 이 올 수 없고 특수 문자가 들어가면 오류를 던져야 함 (InvalidNicknameFormatException)
-     *     parser 는 검색한 키워드 (여러 인물을 검색하는 경우) 를 list 로 반환하는 로직이 필요, 그 과정에서 받은 특수문자들은 치환해버려야함
-     */
-    private List<String> keywordParser(String keywords) {
-        if (keywords == null || keywords.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
+        //BL에 추가
+        securityRedisService.setValue(
+                 BL_PREFIX + accessToken
+                , "logout"
+                , accessTokenExpire
+        );
 
-        //영어 , 힌글 , 일본어 , 중국어 정도만 처리 , 일본어는 히라가나 가타카나 모두 가능하도록
-        //이모티콘 가능(uD0800 - uDFFF) , 특수 문자 기호는 불가능
-        // 허용되지 않는 특수문자를 공백으로 치환해버리는게 더 나음
-        //애초에 띄어쓰기가 포함되어야 하는 키워드도 그냥 분리해서 검색하는 게 낫다.
-        String cleanKeywords = keywords.replaceAll(regex, " ");
+        //RefreshToken 삭제
+        securityRedisService.deleteValue(RT_PREFIX + member.getEmailVerification().getEmail());
 
-        //공백 기준으로 자르고, 빈 문자열 제거 후 리스트로 반환
-        return Arrays.stream(cleanKeywords.split("\\s+")) // 공백 여러 개도 하나로 처리하도록
-                .filter(keyword -> !keyword.isBlank())
-                .collect(Collectors.toList());
+        //프로필 사진 삭제
+        String profileImgUrl = member.getProfileImgUrl();
+
+        if (!profileImgUrl.equals("common/DOTORY_DEFAULT.jpg"))
+            s3Service.deleteFile(member.getProfileImgUrl());
+
+        memberRepository.delete(member);
     }
+
+    public void changeUserStatus(UUID memberKey , String userStatus) {
+        Member member = memberRepository.findByMemberUuid(memberKey)
+                .orElseThrow(MemberNotFoundException::new);
+
+        member.changeUserStatus(UserStatus.of(userStatus));
+    }
+
+
 }
