@@ -20,6 +20,9 @@ public class Notification extends BaseEntity {
     @JoinColumn(name = "member_id" , nullable = false)
     private Member member;
 
+    @Column(nullable = false)
+    private String title;
+
     @Column(name = "notification_message" , nullable = false , length = 255)
     private String message;
 
@@ -30,16 +33,13 @@ public class Notification extends BaseEntity {
     @Column(name = "notification_type" , nullable = false)
     private NotificationType notificationType;
 
-    @Column(name = "target_id")
-    private Long targetId;
-
     @Builder
-    public Notification(Member member, String message, NotificationType notificationType, Long targetId) {
+    public Notification(Member member , String title , String message, NotificationType notificationType) {
         this.member = member;
+        this.title = title;
         this.message = message;
         this.isRead = false;
         this.notificationType = notificationType;
-        this.targetId = targetId;
     }
 
     public void read() {
